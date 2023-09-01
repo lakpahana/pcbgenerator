@@ -1,6 +1,8 @@
 import { Container, Box, Grid, Typography, TextField, Toolbar, Button } from "@mui/material";
 import CalculateIcon from '@mui/icons-material/Calculate';
 import { useEffect, useState } from "react";
+import { calculateIc, calculateIb, calculateRC, calculateRB, calculateCin, calculateCout } from "./Calculations.js";
+
 function App() {
 
   //states for input values
@@ -22,28 +24,22 @@ function App() {
 
   useEffect(() => {
     async function calculate() {
-      console.log("calculating")
+
       console.log(gain, bandwidth, vcc, beta, vbe)
       if (gain && bandwidth && vcc && beta && vbe && cutOff && RE) {
         console.log("all values are present")
         // Calculate collector current (Ic)
-        const Ic = gain / beta;
-
+        const Ic = calculateIc(gain, beta);
         // Calculate base current (Ib)
-        const Ib = Ic / beta;
-
+        const Ib = calculateIb(Ic, beta);
         // Calculate collector resistor (RC)
-        const RC = vcc / Ic;
-
-
-
+        const RC = calculateRC(vcc, Ic);
         // Calculate base resistor (RB)
-        const RB = (vcc - vbe) / Ib;
-
+        const RB = calculateRB(vcc, vbe, Ib);
         // Calculate input capacitor (Cin) and output capacitor (Cout)
-        const f_L = 1 / (2 * Math.PI * RB * cutOff);
-        const Cin = 1 / (2 * Math.PI * f_L * RB);
-        const Cout = 1 / (2 * Math.PI * bandwidth * RC);
+
+        const Cin = calculateCin(RB, cutOff);
+        const Cout = calculateCout(RC, bandwidth);
         // console.log(Cin, Cout)
         setIc(Ic);
         setIb(Ib);
@@ -151,9 +147,14 @@ function App() {
               }
               value={vbe}
               id="outlined-basic" label="Vbe" variant="outlined" />
-            <TextField id="outlined-basic" label="Emitter Resistance" variant="outlined" value={RE} onClick={(e) => {
-              setRE(e.target.value)
-            }} />
+            <TextField
+              id="outlined-basic"
+              label="Emitter Resistance"
+              variant="outlined"
+              value={RE}
+              onChange={(e) => {
+                setRE(e.target.value)
+              }} />
 
             <TextField id="outlined-basic" label="Cut Off Frequency" variant="outlined" value={cutOff} onClick={(e) => {
               setCutOff(e.target.value)
@@ -190,44 +191,44 @@ function App() {
             }}
           >
             {/* //label */}
-            <TextField id="outlined-basic" label="Collector Current" variant="outlined" value={Ic} 
-           inputProps={
+            <TextField id="outlined-basic" label="Collector Current" variant="outlined" value={Ic}
+              inputProps={
 
-              {
-                readOnly: true
+                {
+                  readOnly: true
+                }
               }
-           }
             />
-            <TextField id="outlined-basic" label="Base Current" variant="outlined" value={Ib}  inputProps={
+            <TextField id="outlined-basic" label="Base Current" variant="outlined" value={Ib} inputProps={
 
               {
                 readOnly: true
               }
-           } />
-            <TextField id="outlined-basic" label="Collector Resistor" variant="outlined" value={RC}  inputProps={
+            } />
+            <TextField id="outlined-basic" label="Collector Resistor" variant="outlined" value={RC} inputProps={
 
               {
                 readOnly: true
               }
-           } />
-            <TextField id="outlined-basic" label="Base Resistor" variant="outlined" value={RB}   inputProps={
+            } />
+            <TextField id="outlined-basic" label="Base Resistor" variant="outlined" value={RB} inputProps={
 
               {
                 readOnly: true
               }
-           }/>
-            <TextField id="outlined-basic" label="Input Capacitor" variant="outlined" value={Cin}   inputProps={
+            } />
+            <TextField id="outlined-basic" label="Input Capacitor" variant="outlined" value={Cin} inputProps={
 
               {
                 readOnly: true
               }
-           }/>
-            <TextField id="outlined-basic" label="Output Capacitor" variant="outlined" value={Cout}   inputProps={
+            } />
+            <TextField id="outlined-basic" label="Output Capacitor" variant="outlined" value={Cout} inputProps={
 
               {
                 readOnly: true
               }
-           }/>
+            } />
           </Box>
         </Grid>
       </Grid>
