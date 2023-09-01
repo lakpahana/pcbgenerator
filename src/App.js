@@ -1,11 +1,65 @@
-import { Container,Box, Grid, Typography, TextField, Toolbar, Button } from "@mui/material";
+import { Container, Box, Grid, Typography, TextField, Toolbar, Button } from "@mui/material";
 import CalculateIcon from '@mui/icons-material/Calculate';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 function App() {
 
   //states for input values
   const [gain, setGain] = useState(null);
   const [bandwidth, setBandwidth] = useState(null);
+  const [vcc, setVcc] = useState(10);
+  const [beta, setBeta] = useState(100);
+  const [vbe, setVbe] = useState(0.7);
+  const [RE, setRE] = useState(100);
+  const [cutOff, setCutOff] = useState(100);
+
+  //states for output values
+  const [Ic, setIc] = useState(0);
+  const [Ib, setIb] = useState(0);
+  const [RC, setRC] = useState(0);
+  const [RB, setRB] = useState(0);
+  const [Cin, setCin] = useState(0);
+  const [Cout, setCout] = useState(0);
+
+  useEffect(() => {
+    async function calculate() {
+      console.log("calculating")
+      console.log(gain, bandwidth, vcc, beta, vbe)
+      if (gain && bandwidth && vcc && beta && vbe && cutOff && RE) {
+        console.log("all values are present")
+        // Calculate collector current (Ic)
+        const Ic = gain / beta;
+
+        // Calculate base current (Ib)
+        const Ib = Ic / beta;
+
+        // Calculate collector resistor (RC)
+        const RC = vcc / Ic;
+
+
+
+        // Calculate base resistor (RB)
+        const RB = (vcc - vbe) / Ib;
+
+        // Calculate input capacitor (Cin) and output capacitor (Cout)
+        const f_L = 1 / (2 * Math.PI * RB * cutOff);
+        const Cin = 1 / (2 * Math.PI * f_L * RB);
+        const Cout = 1 / (2 * Math.PI * bandwidth * RC);
+        // console.log(Cin, Cout)
+        setIc(Ic);
+        setIb(Ib);
+        setRC(RC);
+        setRB(RB);
+        setCin(Cin);
+        setCout(Cout);
+
+      }
+    }
+    calculate();
+
+  }, [
+    gain, bandwidth, vcc, beta, vbe, cutOff, RE
+  ])
+
   return (
     <Container>
       {/* simple toolbar with App Name */}
@@ -19,7 +73,7 @@ function App() {
 
         <Button
           onClick={() => {
-            window.location.href = "https://github.com/lakpahana"
+            window.location.href = "https://github.com/lakpahana/pcbgenerator"
           }
           }
           variant="outlined" sx={{
@@ -44,30 +98,67 @@ function App() {
 
 
           <Box
-          sx={{
-            display:"flex",
-            flexDirection:"column",
-            gap:2
-          
-          }}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2
+
+            }}
           >
-            <TextField 
-            
-            onChange={(e)=>{
-              setGain(e.target.value)
-            }
-            }
-            id="outlined-basic"
-            value={gain}
-            label="Gain" variant="outlined" 
-            type="number"/>
             <TextField
-             onChange={(e)=>{
-              setBandwidth(e.target.value)
-             }}
-            id="outlined-basic" label="BandWidth" 
-            type="number"
-            value={bandwidth} variant="outlined" />
+
+              onChange={(e) => {
+                setGain(e.target.value)
+              }
+              }
+              id="outlined-basic"
+              value={gain}
+              label="Gain" variant="outlined"
+              type="number" />
+            <TextField
+              onChange={(e) => {
+                setBandwidth(e.target.value)
+              }}
+              id="outlined-basic" label="BandWidth"
+              type="number"
+              value={bandwidth} variant="outlined" />
+
+
+            {/* textfields for Vcc , Beta, Vbe */}
+
+            <TextField id="outlined-basic"
+
+              onChange={(e) => {
+                setVcc(e.target.value)
+              }
+              }
+              value={vcc}
+              label="Vcc" variant="outlined" />
+            <TextField
+              onChange={
+                (e) => {
+                  setBeta(e.target.value)
+                }
+              }
+              value={beta}
+              id="outlined-basic" label="Beta" variant="outlined" />
+            <TextField
+
+              onChange={
+                (e) => {
+                  setVbe(e.target.value)
+                }
+              }
+              value={vbe}
+              id="outlined-basic" label="Vbe" variant="outlined" />
+            <TextField id="outlined-basic" label="Emitter Resistance" variant="outlined" value={RE} onClick={(e) => {
+              setRE(e.target.value)
+            }} />
+
+            <TextField id="outlined-basic" label="Cut Off Frequency" variant="outlined" value={cutOff} onClick={(e) => {
+              setCutOff(e.target.value)
+            }
+            } />
           </Box>
 
 
@@ -89,7 +180,55 @@ function App() {
               flexGrow: 1,
               textAlign: "center"
             }}
-          >Output Details</Typography>	
+          >Output Details</Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2
+
+            }}
+          >
+            {/* //label */}
+            <TextField id="outlined-basic" label="Collector Current" variant="outlined" value={Ic} 
+           inputProps={
+
+              {
+                readOnly: true
+              }
+           }
+            />
+            <TextField id="outlined-basic" label="Base Current" variant="outlined" value={Ib}  inputProps={
+
+              {
+                readOnly: true
+              }
+           } />
+            <TextField id="outlined-basic" label="Collector Resistor" variant="outlined" value={RC}  inputProps={
+
+              {
+                readOnly: true
+              }
+           } />
+            <TextField id="outlined-basic" label="Base Resistor" variant="outlined" value={RB}   inputProps={
+
+              {
+                readOnly: true
+              }
+           }/>
+            <TextField id="outlined-basic" label="Input Capacitor" variant="outlined" value={Cin}   inputProps={
+
+              {
+                readOnly: true
+              }
+           }/>
+            <TextField id="outlined-basic" label="Output Capacitor" variant="outlined" value={Cout}   inputProps={
+
+              {
+                readOnly: true
+              }
+           }/>
+          </Box>
         </Grid>
       </Grid>
     </Container>
